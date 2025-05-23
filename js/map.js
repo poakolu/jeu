@@ -1,3 +1,4 @@
+// Déclaration unique des constantes, pas en double ailleurs
 const TILE_COLORS = {
   plaine: '#8fbc8f',
   foret: '#2e8b57',
@@ -17,14 +18,12 @@ const TILE_NAMES = {
 };
 
 function generateMap() {
-  // Carte 12x12 simple pour l'exemple avec un château en haut gauche et un en bas droit
+  // Carte 12x12 simple
   const map = Array(12).fill(null).map(() => Array(12).fill('plaine'));
 
-  // Position des châteaux
   map[0][0] = 'chateau';
   map[11][11] = 'chateau';
 
-  // Ajout de quelques forêts, lacs, montagnes et donjons (exemple simplifié)
   map[2][2] = 'foret';
   map[2][3] = 'foret';
   map[5][5] = 'lac';
