@@ -1,89 +1,120 @@
-// map.js
+const TILE_COLORS = {
+  plaine: '#98fb98',      // vert clair
+  foret: '#2e8b57',       // vert foncé
+  lac: '#1e90ff',         // bleu vif
+  montagne: '#a9a9a9',    // gris
+  donjon: '#4b4b4b',      // gris très foncé
+  chateau: '#8b4513'      // marron
+};
 
-const TILE_TYPES = ['plaine', 'foret', 'lac', 'montagne', 'donjon', 'chateau'];
+const tileNames = {
+  plaine: 'Plaine',
+  foret: 'Forêt',
+  lac: 'Lac',
+  montagne: 'Montagne',
+  donjon: 'Donjon',
+  chateau: 'Château'
+};
 
-// Couleurs et probabilités gérées dans le HTML, ici on génère la map avec contraintes basiques
-function generateMap() {
-  const width = 12;
-  const height = 12;
-  const map = [];
+const map = generateMap();  // ta fonction qui génère la map 12x12
 
-  // Initialise la map avec que des plaines
-  for (let y = 0; y < height; y++) {
-    map[y] = [];
-    for (let x = 0; x < width; x++) {
-      map[y][x] = 'plaine';
+const mapDiv = document.getElementById('game-map');
+mapDiv.style.display = 'grid';
+mapDiv.style.gridTemplateColumns = `repeat(${map[0].length}, 40px)`;
+mapDiv.style.gridGap = '1px';
+
+let selectedUnit = null;
+let units = [
+  { x: 0, y: 0, type: 'soldats', nombre: 15, pv: 100, team: 'bleu' },
+  { x: 11, y: 11, type: 'chevaliers', nombre: 15, pv: 100, team: 'rouge' }
+];
+
+function drawMap() {
+  mapDiv.innerHTML = '';
+  for (let y = 0; y < map.length; y++) {
+    for (let x = 0; x < map[y].length; x++) {
+      const tile = map[y][x];
+      const tileDiv = document.createElement('div');
+      tileDiv.className = 'tile';
+      tileDiv.style.backgroundColor = TILE_COLORS[tile];
+      tileDiv.title = `${tileNames[tile]} (${x},${y})`;
+      tileDiv.style.width = '40px';
+      tileDiv.style.height = '40px';
+      tileDiv.style.display = 'flex';
+      tileDiv.style.justifyContent = 'center';
+      tileDiv.style.alignItems = 'center';
+      tileDiv.style.cursor = 'pointer';
+      tileDiv.dataset.x = x;
+      tileDiv.dataset.y = y;
+
+      // Afficher unité si présente
+      const unitHere = units.find(u => u.x === x && u.y === y);
+      if (unitHere) {
+        tileDiv.textContent = unitHere.nombre;
+        tileDiv.style.color = unitHere.team === 'bleu' ? 'blue' : 'red';
+        tileDiv.style.fontWeight = 'bold';
+      }
+
+      // Gestion clic sur case
+      tileDiv.addEventListener('click', () => {
+        onTileClick(x, y);
+      });
+
+      mapDiv.appendChild(tileDiv);
     }
   }
-
-  // Place 2 châteaux aux coins opposés (ex : haut-gauche et bas-droite)
-  map[0][0] = 'chateau';
-  map[height-1][width-1] = 'chateau';
-
-  // Fonction pour placer des zones connexes (lacs, montagnes, forêts) selon ta règle 25%
-  function placeZone(type, count) {
-    let placed = 0;
-    while (placed < count) {
-      let x = Math.floor(Math.random() * width);
-      let y = Math.floor(Math.random() * height);
-
-      if (map[y][x] === 'plaine') {
-        map[y][x] = type;
-        placed++;
-
-        // Propage avec 25% de chance aux cases adjacentes
-        const directions = [
-          [0,1], [1,0], [0,-1], [-1,0]
-        ];
-        directions.forEach(([dx,dy]) => {
-          let nx = x + dx;
-          let ny = y + dy;
-          if (
-            nx >= 0 && nx < width &&
-            ny >= 0 && ny < height &&
-            map[ny][nx] === 'plaine' &&
-            Math.random() < 0.25
-          ) {
-            map[ny][nx] = type;
-          }
-        });
-      }
-    }
-  }
-
-  // Place zones : forêts, lacs, montagnes (exemple : 10 cases chacune)
-  placeZone('foret', 10);
-  placeZone('lac', 8);
-  placeZone('montagne', 8);
-
-  // Place quelques donjons isolés (1 case chacun, pas côte à côte)
-  let donjonsPlaces = 0;
-  while (donjonsPlaces < 4) {
-    let x = Math.floor(Math.random() * width);
-    let y = Math.floor(Math.random() * height);
-    if (map[y][x] === 'plaine') {
-      // Vérifie qu’aucun donjon autour
-      let noDonjonNearby = true;
-      for (let dy = -1; dy <= 1; dy++) {
-        for (let dx = -1; dx <= 1; dx++) {
-          let nx = x + dx;
-          let ny = y + dy;
-          if (
-            nx >= 0 && nx < width &&
-            ny >= 0 && ny < height &&
-            map[ny][nx] === 'donjon'
-          ) {
-            noDonjonNearby = false;
-          }
-        }
-      }
-      if (noDonjonNearby) {
-        map[y][x] = 'donjon';
-        donjonsPlaces++;
-      }
-    }
-  }
-
-  return map;
 }
+
+function onTileClick(x, y) {
+  const unit = units.find(u => u.x === x && u.y === y);
+  if (unit) {
+    // Sélectionner l'unité
+    selectedUnit = unit;
+    afficherInfosUnit(unit);
+  } else if (selectedUnit) {
+    // Tenter déplacement si case accessible et adjacente
+    if (isAdjacent(selectedUnit.x, selectedUnit.y, x, y) && canMoveTo(x, y)) {
+      selectedUnit.x = x;
+      selectedUnit.y = y;
+      selectedUnit = null;
+      clearInfos();
+      drawMap();
+    } else {
+      alert('Déplacement impossible ! Case non accessible ou trop loin.');
+    }
+  }
+}
+
+function isAdjacent(x1, y1, x2, y2) {
+  return (Math.abs(x1 - x2) === 1 && y1 === y2) || (Math.abs(y1 - y2) === 1 && x1 === x2);
+}
+
+function canMoveTo(x, y) {
+  const tile = map[y][x];
+  if (tile === 'lac' || tile === 'montagne') return false; // cases interdites
+  // pas d'unité déjà présente
+  if (units.some(u => u.x === x && u.y === y)) return false;
+  return true;
+}
+
+function afficherInfosUnit(unit) {
+  const infoDiv = document.getElementById('unit-info');
+  if (!infoDiv) return;
+  infoDiv.innerHTML = `
+    <h3>Unité sélectionnée</h3>
+    <p>Type: ${unit.type}</p>
+    <p>Nombre: ${unit.nombre}</p>
+    <p>PV: ${unit.pv}</p>
+    <p>Position: (${unit.x},${unit.y})</p>
+    <p>Équipe: ${unit.team}</p>
+  `;
+}
+
+function clearInfos() {
+  const infoDiv = document.getElementById('unit-info');
+  if (infoDiv) infoDiv.innerHTML = '';
+}
+
+// Initialisation
+drawMap();
 
