@@ -1,79 +1,89 @@
-// Constants
-const MAP_SIZE = 12;
-const TILE_TYPES = {
-  PLAINE: 'plaine',
-  FORET: 'foret',
-  LAC: 'lac',
-  MONTAGNE: 'montagne',
-  DONJON: 'donjon',
-  CHATEAU: 'chateau'
-};
+// map.js
 
-const TILE_COLORS = {
-  [TILE_TYPES.PLAINE]: '#8FBC8F',       // Vert clair
-  [TILE_TYPES.FORET]: '#2E8B57',        // Vert foncé
-  [TILE_TYPES.LAC]: '#1E90FF',          // Bleu vif
-  [TILE_TYPES.MONTAGNE]: '#A9A9A9',     // Gris clair
-  [TILE_TYPES.DONJON]: '#2F4F4F',       // Gris foncé
-  [TILE_TYPES.CHATEAU]: '#8B4513'       // Marron
-};
+const TILE_TYPES = ['plaine', 'foret', 'lac', 'montagne', 'donjon', 'chateau'];
 
-// Génère la map avec les règles de placement
+// Couleurs et probabilités gérées dans le HTML, ici on génère la map avec contraintes basiques
 function generateMap() {
-  const map = Array.from({ length: MAP_SIZE }, () => Array(MAP_SIZE).fill(TILE_TYPES.PLAINE));
+  const width = 12;
+  const height = 12;
+  const map = [];
 
-  // Fonction utilitaire pour poser des biomes liés (lac, forêt, montagne)
-  function placeBiomes(type, chance = 0.05, spreadChance = 0.25) {
-    for (let y = 0; y < MAP_SIZE; y++) {
-      for (let x = 0; x < MAP_SIZE; x++) {
-        if (map[y][x] !== TILE_TYPES.PLAINE) continue;
-        if (Math.random() < chance || hasAdjacentType(x, y, type, spreadChance)) {
-          map[y][x] = type;
-        }
+  // Initialise la map avec que des plaines
+  for (let y = 0; y < height; y++) {
+    map[y] = [];
+    for (let x = 0; x < width; x++) {
+      map[y][x] = 'plaine';
+    }
+  }
+
+  // Place 2 châteaux aux coins opposés (ex : haut-gauche et bas-droite)
+  map[0][0] = 'chateau';
+  map[height-1][width-1] = 'chateau';
+
+  // Fonction pour placer des zones connexes (lacs, montagnes, forêts) selon ta règle 25%
+  function placeZone(type, count) {
+    let placed = 0;
+    while (placed < count) {
+      let x = Math.floor(Math.random() * width);
+      let y = Math.floor(Math.random() * height);
+
+      if (map[y][x] === 'plaine') {
+        map[y][x] = type;
+        placed++;
+
+        // Propage avec 25% de chance aux cases adjacentes
+        const directions = [
+          [0,1], [1,0], [0,-1], [-1,0]
+        ];
+        directions.forEach(([dx,dy]) => {
+          let nx = x + dx;
+          let ny = y + dy;
+          if (
+            nx >= 0 && nx < width &&
+            ny >= 0 && ny < height &&
+            map[ny][nx] === 'plaine' &&
+            Math.random() < 0.25
+          ) {
+            map[ny][nx] = type;
+          }
+        });
       }
     }
   }
 
-  function hasAdjacentType(x, y, type, chance) {
-    const dirs = [[0,1],[1,0],[-1,0],[0,-1]];
-    return dirs.some(([dx,dy]) => {
-      const nx = x+dx, ny = y+dy;
-      return inBounds(nx,ny) && map[ny][nx] === type && Math.random() < chance;
-    });
-  }
+  // Place zones : forêts, lacs, montagnes (exemple : 10 cases chacune)
+  placeZone('foret', 10);
+  placeZone('lac', 8);
+  placeZone('montagne', 8);
 
-  function inBounds(x, y) {
-    return x >= 0 && x < MAP_SIZE && y >= 0 && y < MAP_SIZE;
-  }
-
-  // Place les différents types de terrain
-  placeBiomes(TILE_TYPES.FORET, 0.07, 0.25);
-  placeBiomes(TILE_TYPES.LAC, 0.04, 0.25);
-  placeBiomes(TILE_TYPES.MONTAGNE, 0.04, 0.25);
-
-  // Place les donjons (isolés)
-  let donjons = 0;
-  while (donjons < 3) {
-    const x = Math.floor(Math.random() * MAP_SIZE);
-    const y = Math.floor(Math.random() * MAP_SIZE);
-    if (map[y][x] === TILE_TYPES.PLAINE && noAdjacentType(x, y, TILE_TYPES.DONJON)) {
-      map[y][x] = TILE_TYPES.DONJON;
-      donjons++;
+  // Place quelques donjons isolés (1 case chacun, pas côte à côte)
+  let donjonsPlaces = 0;
+  while (donjonsPlaces < 4) {
+    let x = Math.floor(Math.random() * width);
+    let y = Math.floor(Math.random() * height);
+    if (map[y][x] === 'plaine') {
+      // Vérifie qu’aucun donjon autour
+      let noDonjonNearby = true;
+      for (let dy = -1; dy <= 1; dy++) {
+        for (let dx = -1; dx <= 1; dx++) {
+          let nx = x + dx;
+          let ny = y + dy;
+          if (
+            nx >= 0 && nx < width &&
+            ny >= 0 && ny < height &&
+            map[ny][nx] === 'donjon'
+          ) {
+            noDonjonNearby = false;
+          }
+        }
+      }
+      if (noDonjonNearby) {
+        map[y][x] = 'donjon';
+        donjonsPlaces++;
+      }
     }
   }
 
-  // Place les châteaux dans les coins
-  map[0][0] = TILE_TYPES.CHATEAU;
-  map[MAP_SIZE-1][MAP_SIZE-1] = TILE_TYPES.CHATEAU;
-
   return map;
-}
-
-function noAdjacentType(x, y, type) {
-  const dirs = [[0,1],[1,0],[-1,0],[0,-1]];
-  return dirs.every(([dx,dy]) => {
-    const nx = x+dx, ny = y+dy;
-    return !inBounds(nx,ny) || map[ny][nx] !== type;
-  });
 }
 
