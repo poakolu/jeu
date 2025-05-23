@@ -5,18 +5,72 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Jeu de Stratégie Tour par Tour</title>
   <link rel="stylesheet" href="css/style.css" />
+  <style>
+    /* Styles de base pour la map */
+    #game-map {
+      display: grid;
+      grid-template-columns: repeat(12, 40px);
+      gap: 2px;
+      margin-top: 20px;
+    }
+    .tile {
+      width: 40px;
+      height: 40px;
+      border: 1px solid #555;
+      box-sizing: border-box;
+    }
+  </style>
 </head>
 <body>
 
   <h1>Jeu de Stratégie Tour par Tour</h1>
 
   <div id="game-container">
-    <!-- Ici la carte, unités, infos, etc. -->
+    <div id="game-map"></div>
+    <!-- Ici tu pourras ajouter unités, infos, etc. -->
   </div>
 
   <script src="js/utils.js"></script>
   <script src="js/map.js"></script>
   <script src="js/game.js"></script>
+
+  <script>
+    // Ici, on affiche la carte générée par generateMap() définie dans map.js
+
+    const tileNames = {
+      plaine: 'Plaine',
+      foret: 'Forêt',
+      lac: 'Lac',
+      montagne: 'Montagne',
+      donjon: 'Donjon',
+      chateau: 'Château'
+    };
+
+    const TILE_COLORS = {
+      plaine: '#A2D149',
+      foret: '#2E7D32',
+      lac: '#42A5F5',
+      montagne: '#B0BEC5',
+      donjon: '#37474F',
+      chateau: '#795548'
+    };
+
+    const map = generateMap(); // Fonction dans map.js
+
+    const mapDiv = document.getElementById('game-map');
+    mapDiv.style.gridTemplateColumns = `repeat(${map[0].length}, 40px)`;
+
+    map.forEach((row, y) => {
+      row.forEach((tile, x) => {
+        const tileDiv = document.createElement('div');
+        tileDiv.className = 'tile';
+        tileDiv.style.backgroundColor = TILE_COLORS[tile];
+        tileDiv.title = `${tileNames[tile]} (${x},${y})`;
+        mapDiv.appendChild(tileDiv);
+      });
+    });
+  </script>
 </body>
 </html>
+
 
