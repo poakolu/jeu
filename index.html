@@ -4,39 +4,110 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Jeu de Stratégie Tour par Tour</title>
-  <link rel="stylesheet" href="css/style.css" />
   <style>
-    /* Styles de base pour la map */
-    #game-map {
-      display: grid;
-      grid-template-columns: repeat(12, 40px);
-      gap: 2px;
-      margin-top: 20px;
-    }
-    .tile {
-      width: 40px;
-      height: 40px;
-      border: 1px solid #555;
+    /* Reset basique */
+    * {
       box-sizing: border-box;
     }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1e1e2f;
+      color: #eee;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    h1 {
+      margin-bottom: 10px;
+      color: #f5a623;
+      text-shadow: 0 0 8px #f5a623;
+    }
+    #game-container {
+      display: flex;
+      gap: 20px;
+      background: #2c2c3c;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px #0008;
+    }
+    #game-map {
+      display: grid;
+      grid-template-columns: repeat(12, 45px);
+      grid-template-rows: repeat(12, 45px);
+      gap: 3px;
+      background: #222233;
+      padding: 10px;
+      border-radius: 8px;
+      box-shadow: inset 0 0 10px #0008;
+    }
+    .tile {
+      width: 45px;
+      height: 45px;
+      border-radius: 6px;
+      box-shadow: inset 0 0 5px #0008;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 10px;
+      color: #fff9;
+      user-select: none;
+      position: relative;
+    }
+    .tile:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 10px #f5a623;
+      z-index: 2;
+      color: #fff;
+    }
+    #unit-info {
+      min-width: 220px;
+      background: #14142a;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 0 12px #000a;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    #unit-info h2 {
+      margin-top: 0;
+      color: #f5a623;
+      font-size: 18px;
+      text-align: center;
+      text-shadow: 0 0 5px #f5a623;
+    }
+    #unit-info p {
+      margin: 8px 0;
+    }
+    /* Couleurs tuiles */
+    .plaine { background-color: #7ec850; }
+    .foret { background-color: #34632f; }
+    .lac { background-color: #3f83cc; }
+    .montagne { background-color: #a9a9a9; }
+    .donjon { background-color: #4b4b4b; }
+    .chateau { background-color: #a0522d; }
   </style>
 </head>
 <body>
-
   <h1>Jeu de Stratégie Tour par Tour</h1>
 
   <div id="game-container">
     <div id="game-map"></div>
-    <!-- Ici tu pourras ajouter unités, infos, etc. -->
+
+    <div id="unit-info">
+      <h2>Infos Unité</h2>
+      <p>Cliquez sur une case pour voir les détails ici.</p>
+    </div>
   </div>
 
   <script src="js/utils.js"></script>
   <script src="js/map.js"></script>
   <script src="js/game.js"></script>
-
   <script>
-    // Ici, on affiche la carte générée par generateMap() définie dans map.js
-
     const tileNames = {
       plaine: 'Plaine',
       foret: 'Forêt',
@@ -46,29 +117,54 @@
       chateau: 'Château'
     };
 
-    const TILE_COLORS = {
-      plaine: '#A2D149',
-      foret: '#2E7D32',
-      lac: '#42A5F5',
-      montagne: '#B0BEC5',
-      donjon: '#37474F',
-      chateau: '#795548'
-    };
-
-    const map = generateMap(); // Fonction dans map.js
-
+    const map = generateMap();
     const mapDiv = document.getElementById('game-map');
-    mapDiv.style.gridTemplateColumns = `repeat(${map[0].length}, 40px)`;
+    const infoDiv = document.getElementById('unit-info');
+
+    mapDiv.innerHTML = '';
+    mapDiv.style.gridTemplateColumns = `repeat(${map[0].length}, 45px)`;
 
     map.forEach((row, y) => {
       row.forEach((tile, x) => {
         const tileDiv = document.createElement('div');
-        tileDiv.className = 'tile';
-        tileDiv.style.backgroundColor = TILE_COLORS[tile];
+        tileDiv.className = `tile ${tile}`;
         tileDiv.title = `${tileNames[tile]} (${x},${y})`;
+        tileDiv.dataset.x = x;
+        tileDiv.dataset.y = y;
+
+        tileDiv.addEventListener('click', () => {
+          // Affichage infos tuile et unité (si présente)
+          let infoHtml = `<h2>Case (${x},${y}) - ${tileNames[tile]}</h2>`;
+
+          // Ici, on suppose que getUnitAt(x,y) retourne l'unité ou null
+          const unit = getUnitAt(x, y);
+          if (unit) {
+            infoHtml += `
+              <p><strong>Unité :</strong> ${unit.type}</p>
+              <p><strong>Nombre :</strong> ${unit.count}</p>
+              <p><strong>PV par soldat :</strong> ${unit.hp}</p>
+              <p><strong>Attaque :</strong> ${unit.attack}</p>
+              <p><strong>Défense :</strong> ${unit.defense}</p>
+            `;
+          } else {
+            infoHtml += `<p>Aucune unité sur cette case.</p>`;
+          }
+          infoDiv.innerHTML = infoHtml;
+        });
+
         mapDiv.appendChild(tileDiv);
       });
     });
+
+    // Exemple fonction temporaire getUnitAt, à remplacer par la vraie
+    function getUnitAt(x, y) {
+      // Exemple de données fictives (à remplacer)
+      const fakeUnits = [
+        {x: 0, y: 0, type: 'Soldats', count: 15, hp: 100, attack: 20, defense: 15},
+        {x: 11, y: 11, type: 'Chevaliers', count: 15, hp: 120, attack: 30, defense: 25}
+      ];
+      return fakeUnits.find(u => u.x === x && u.y === y) || null;
+    }
   </script>
 </body>
 </html>
