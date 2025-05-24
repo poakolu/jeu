@@ -1,4 +1,14 @@
 // game.js
+document.getElementById('startGameBtn').addEventListener('click', () => {
+  menu.style.display = 'none';
+  gameContainer.style.display = 'block';
+
+  // Forcer un petit délai pour que l'affichage du canvas soit pris en compte
+  setTimeout(() => {
+    draw();
+    updateResourcesDisplay();
+  }, 50);
+});
 
 import { tileSize, rows, cols, terrains, terrainMap, groups } from './map.js';
 
