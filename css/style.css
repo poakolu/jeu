@@ -1,31 +1,33 @@
 body {
-  background: #111;
-  color: #eee;
   font-family: Arial, sans-serif;
   text-align: center;
+  margin: 10px;
+  background-color: #eef2f3;
 }
 
-canvas {
-  background: #222;
-  display: block;
-  margin: 20px auto;
-  border: 2px solid #555;
-}
-
-#info, #resources {
-  max-width: 800px;
+#gameCanvas {
+  border: 2px solid black;
   margin: 10px auto;
-  text-align: left;
-  font-size: 16px;
-  background: #222;
-  border: 1px solid #444;
-  padding: 10px;
-  border-radius: 5px;
+  display: block;
 }
 
-#resources {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 15px;
+#resources, #info {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+button {
+  margin: 5px;
+  padding: 8px 12px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#menu, #credits {
+  margin-top: 50px;
+}
+
+#credits p {
+  font-size: 18px;
 }
 
