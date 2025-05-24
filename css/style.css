@@ -1,4 +1,29 @@
 body {
+  background: #111;
+  color: #eee;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+canvas {
+  background: #222;
+  display: block;
+  margin: 20px auto;
+  border: 2px solid #555;
+}
+
+#info, #resources {
+  max-width: 800px;
+  margin: auto;
+  text-align: left;
+  padding: 10px;
+  background-color: #1a1a1a;
+  border: 1px solid #444;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+body {
   font-family: Arial, sans-serif;
   background-color: #f5f5f5;
   text-align: center;
