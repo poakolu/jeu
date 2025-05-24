@@ -1,3 +1,29 @@
+// --- Mise à jour des ressources ---
+function updateResourcesDisplay() {
+  document.getElementById('food1').innerText = resources[1].food;
+  document.getElementById('gold1').innerText = resources[1].gold;
+  document.getElementById('food2').innerText = resources[2].food;
+  document.getElementById('gold2').innerText = resources[2].gold;
+}
+
+// --- Affichage des infos unité ---
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  const cx = Math.floor((e.clientX - rect.left) / tileSize);
+  const cy = Math.floor((e.clientY - rect.top) / tileSize);
+
+  const group = groups.find(g => g.x === cx && g.y === cy);
+  const info = document.getElementById('info');
+
+  if (group) {
+    const nourri = resources[group.player].food > 0 ? 'Oui' : 'Non';
+    const classe = 'Sorciers'; // Change si tu as d'autres types
+    info.innerText = `Groupe du joueur ${group.player} — PV: ${group.hp}, Classe: ${classe}, Nourri: ${nourri}`;
+  } else {
+    info.innerText = '';
+  }
+});
+
 // Affiche les ressources à l'écran
 function updateResourcesDisplay() {
   document.getElementById('food1').innerText = resources[1].food;
