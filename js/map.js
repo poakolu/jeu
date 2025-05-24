@@ -1,37 +1,25 @@
-// Déclaration unique des constantes, pas en double ailleurs
-const TILE_COLORS = {
-  plaine: '#8fbc8f',
-  foret: '#2e8b57',
-  lac: '#3399ff',
-  montagne: '#a9a9a9',
-  donjon: '#555555',
-  chateau: '#8b4513'
+const tileSize = 40;
+const rows = 20;
+const cols = 20;
+
+const terrains = {
+  plain: { color: '#7cfc00', walkable: true },
+  forest: { color: '#228B22', walkable: false },
+  lake: { color: '#1e90ff', walkable: false },
+  desert: { color: '#edc9af', walkable: true },
+  dungeon: { color: '#444444', walkable: false },
 };
 
-const TILE_NAMES = {
-  plaine: 'Plaine',
-  foret: 'Forêt',
-  lac: 'Lac',
-  montagne: 'Montagne',
-  donjon: 'Donjon',
-  chateau: 'Château'
-};
-
-function generateMap() {
-  // Carte 12x12 simple
-  const map = Array(12).fill(null).map(() => Array(12).fill('plaine'));
-
-  map[0][0] = 'chateau';
-  map[11][11] = 'chateau';
-
-  map[2][2] = 'foret';
-  map[2][3] = 'foret';
-  map[5][5] = 'lac';
-  map[5][6] = 'lac';
-  map[7][7] = 'montagne';
-  map[8][7] = 'montagne';
-  map[4][10] = 'donjon';
-
-  return map;
+const terrainMap = [];
+for(let y=0; y<rows; y++) {
+  terrainMap[y] = [];
+  for(let x=0; x<cols; x++) {
+    let rnd = Math.random();
+    if(rnd < 0.05) terrainMap[y][x] = 'lake';
+    else if(rnd < 0.15) terrainMap[y][x] = 'forest';
+    else if(rnd < 0.18) terrainMap[y][x] = 'dungeon';
+    else if(rnd < 0.3) terrainMap[y][x] = 'desert';
+    else terrainMap[y][x] = 'plain';
+  }
 }
 
