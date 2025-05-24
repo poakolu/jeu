@@ -1,34 +1,24 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Jeu de stratégie</title>
-<link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mon Jeu</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <!-- Menu initial -->
+  <div id="menu">
+    <button id="startGameBtn">Jouer</button>
+  </div>
 
-<div id="menu">
-  <h2>Bienvenue dans le Jeu</h2>
-  <button id="startGameBtn">Jouer</button>
-  <button id="settingsBtn">Paramètres</button>
-  <button id="creditsBtn">Crédits</button>
-</div>
+  <!-- Conteneur du jeu, caché au départ -->
+  <div id="gameContainer" style="display:none;">
+    <canvas id="gameCanvas" width="800" height="800"></canvas>
+    <div id="resourcesDisplay"></div>
+  </div>
 
-<div id="gameContainer" style="display:none;">
-  <canvas id="gameCanvas" width="800" height="800"></canvas>
-  <button id="feedButton">Nourrir toutes mes troupes</button>
-  <div id="resources"></div>
-  <div id="info"></div>
-</div>
-
-<div id="credits" style="display:none;">
-  <h2>Crédits</h2>
-  <p>Créé par Poakolu - 2025</p>
-  <button id="backFromCredits">Retour</button>
-</div>
-
-<script type="module" src="game.js"></script>
+  <script src="game.js"></script>
 </body>
 </html>
 
