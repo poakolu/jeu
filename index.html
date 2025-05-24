@@ -3,19 +3,32 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Jeu de Stratégie Tour par Tour</title>
-<link rel="stylesheet" href="css/style.css" />
+<title>Jeu de stratégie</title>
+<link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
-<h1>Stratégie Tour par Tour - House of the Dragon Style</h1>
-<canvas id="gameCanvas" width="800" height="800"></canvas>
-<div id="resources"></div>
-<div id="info"></div>
+<div id="menu">
+  <h2>Bienvenue dans le Jeu</h2>
+  <button id="startGameBtn">Jouer</button>
+  <button id="settingsBtn">Paramètres</button>
+  <button id="creditsBtn">Crédits</button>
+</div>
 
-<script src="js/map.js"></script>
-<script src="js/game.js"></script>
+<div id="gameContainer" style="display:none;">
+  <canvas id="gameCanvas" width="800" height="800"></canvas>
+  <button id="feedButton">Nourrir toutes mes troupes</button>
+  <div id="resources"></div>
+  <div id="info"></div>
+</div>
 
+<div id="credits" style="display:none;">
+  <h2>Crédits</h2>
+  <p>Créé par Poakolu - 2025</p>
+  <button id="backFromCredits">Retour</button>
+</div>
+
+<script type="module" src="game.js"></script>
 </body>
 </html>
 
