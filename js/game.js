@@ -1,66 +1,42 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-const tileSize = 40;
-const rows = 20;
-const cols = 20;
-
 let currentPlayer = 1; // 1 ou 2
 let selectedGroup = null;
 
-const terrains = {
-  plain: { color: '#7cfc00', walkable: true },
-  forest: { color: '#228B22', walkable: false },
-  lake: { color: '#1e90ff', walkable: false },
-  desert: { color: '#edc9af', walkable: true },
-  dungeon: { color: '#444444', walkable: false },
-};
-
-const terrainMap = [];
-for(let y=0; y<rows; y++) {
-  terrainMap[y] = [];
-  for(let x=0; x<cols; x++) {
-    // Aléatoire simple pour terrain
-    let rnd = Math.random();
-    if(rnd < 0.05) terrainMap[y][x] = 'lake';
-    else if(rnd < 0.15) terrainMap[y][x] = 'forest';
-    else if(rnd < 0.18) terrainMap[y][x] = 'dungeon';
-    else if(rnd < 0.3) terrainMap[y][x] = 'desert';
-    else terrainMap[y][x] = 'plain';
-  }
-}
-
-// Groupes d’unités
+// Groupes d’unités avec infos supplémentaires
 const groups = [
-  { id: 1, player: 1, x: 1, y: 1, size: 15, hp: 15*10, attack: 5, defense: 3, moved: false, class: 'Sorciers', fed: true },
-  { id: 2, player: 2, x: 18, y: 18, size: 15, hp: 15*10, attack: 6, defense: 2, moved: false, class: 'Guerriers', fed: true },
+  { id: 1, player: 1, x: 1, y: 1, size: 15, hp: 15*10, attack: 5, defense: 3, moved: false, class: "Sorciers", fed: true },
+  { id: 2, player: 2, x: 18, y: 18, size: 15, hp: 15*10, attack: 6, defense: 2, moved: false, class: "Guerriers", fed: true },
 ];
 
-// Ressources
+// Ressources des joueurs
 let resources = {
   1: { food: 100, gold: 50 },
   2: { food: 100, gold: 50 },
 };
 
-// Events aléatoires (simplifiés)
-function randomEvent(player) {
-  const chance = Math.random();
-  const info = document.getElementById('info');
-  if(chance < 0.1) {
-    // Maladie qui fait perdre 3 PV par groupe
-    groups.filter(g => g.player === player).forEach(g => {
-      g.hp -= 3;
-      if(g.hp < 0) g.hp = 0;
-    });
-    info.innerText = `Joueur ${player} subit une maladie! 3 PV perdus sur tous ses groupes.`;
-  } else if(chance < 0.2) {
-    // Pénurie de nourriture
-    resources[player].food -= 20;
-    if(resources[player].food < 0) resources[player].food = 0;
-    info.innerText = `Joueur ${player} manque de nourriture! -20 nourriture.`;
-  } else {
-    info.innerText = `Tour du joueur ${player}.`;
+// Mise à jour de l'affichage des ressources
+function updateResourcesDisplay() {
+  const resDiv = document.getElementById('resources');
+  resDiv.innerHTML = `
+    <div><b>Joueur 1</b> - Nourriture: ${resources[1].food} | Or: ${resources[1].gold}</div>
+    <div><b>Joueur 2</b> - Nourriture: ${resources[2].food} | Or: ${resources[2].gold}</div>
+  `;
+}
+
+// Affichage des infos d'un groupe dans la div info
+function showGroupInfo(group) {
+  if(!group) {
+    document.getElementById('info').innerText = '';
+    return;
   }
+  const fedStatus = group.fed ? "Oui" : "Non";
+  document.getElementById('info').innerText =
+    `Groupe joueur ${group.player} - ${group.class}\n` +
+    `Taille: ${group.size}\n` +
+    `PV: ${group.hp}\n` +
+    `Nourri: ${fedStatus}`;
 }
 
 // Dessiner le plateau
@@ -103,6 +79,15 @@ function canMoveTo(x, y) {
   if(groups.find(g => g.x === x && g.y === y)) return false;
   return true;
 }
+
+// Gestion survol souris pour afficher infos groupe sous la souris
+canvas.addEventListener('mousemove', e => {
+  const rect = canvas.getBoundingClientRect();
+  const cx = Math.floor((e.clientX - rect.left) / tileSize);
+  const cy = Math.floor((e.clientY - rect.top) / tileSize);
+  const hoveredGroup = groups.find(g => g.x === cx && g.y === cy && g.player === currentPlayer);
+  showGroupInfo(hoveredGroup);
+});
 
 // Gestion clic pour sélectionner/déplacer/attaquer
 canvas.addEventListener('click', e => {
@@ -150,7 +135,6 @@ canvas.addEventListener('click', e => {
   draw();
 });
 
-// Combat simplifié
 function combat(attacker, defender) {
   let damage = attacker.attack * attacker.size - defender.defense * defender.size;
   damage = Math.max(damage, 0);
@@ -166,50 +150,46 @@ function combat(attacker, defender) {
   info.innerText = `Combat! Joueur ${attacker.player} inflige ${damage} dégâts au groupe adverse.`;
 }
 
-// Fin de tour
-function endTurn() {
+function randomEvent(player) {
+  const chance = Math.random();
+  const info = document.getElementById('info');
+  if(chance < 0.1) {
+    groups.filter(g => g.player === player).forEach(g => {
+      g.hp -= 3;
+      if(g.hp < 0) g.hp = 0;
+    });
+    info.innerText = `Joueur ${player} subit une maladie! 3 PV perdus sur tous ses groupes.`;
+  } else if(chance < 0.2) {
+    resources[player].food -= 20;
+    if(resources[player].food < 0) resources[player].food = 0;
+    info.innerText = `Joueur ${player} a une mauvaise récolte! -20 nourriture.`;
+  } else {
+    info.innerText = '';
+  }
+}
+
+function nextTurn() {
+  currentPlayer = currentPlayer === 1 ? 2 : 1;
   groups.forEach(g => {
     if(g.player === currentPlayer) g.moved = false;
   });
-  currentPlayer = currentPlayer === 1 ? 2 : 1;
+  resources[currentPlayer].food += 10;
+  resources[currentPlayer].gold += 5;
   randomEvent(currentPlayer);
   updateResourcesDisplay();
   draw();
 }
 
-document.addEventListener('keydown', e => {
-  if(e.key === 'Enter') endTurn();
-});
-
-// --- NOUVEAU : Affichage ressources joueurs ---
-function updateResourcesDisplay() {
-  const info = document.getElementById('info');
-  let text = `Ressources Joueur 1: Nourriture = ${resources[1].food}, Or = ${resources[1].gold}\n`;
-  text += `Ressources Joueur 2: Nourriture = ${resources[2].food}, Or = ${resources[2].gold}\n`;
-  info.innerText = text;
-}
-
-// --- NOUVEAU : Affichage infos groupe au survol ---
-canvas.addEventListener('mousemove', e => {
-  const rect = canvas.getBoundingClientRect();
-  const mx = Math.floor((e.clientX - rect.left) / tileSize);
-  const my = Math.floor((e.clientY - rect.top) / tileSize);
-  
-  const hoveredGroup = groups.find(g => g.x === mx && g.y === my);
-  const info = document.getElementById('info');
-  if(hoveredGroup && hoveredGroup.player === currentPlayer) {
-    info.innerText = `Groupe ${hoveredGroup.class} - Taille: ${hoveredGroup.size}, PV: ${hoveredGroup.hp}, Nourri: ${hoveredGroup.fed ? 'Oui' : 'Non'}`;
-  } else {
-    updateResourcesDisplay();
-  }
-});
-
 function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawBoard();
   drawGroups();
   updateResourcesDisplay();
 }
 
-randomEvent(currentPlayer);
+updateResourcesDisplay();
 draw();
+
+// Tour automatique toutes les 60s
+setInterval(nextTurn, 60000);
 
