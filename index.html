@@ -3,22 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mon Jeu</title>
+  <title>Jeu de stratégie tour par tour</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <!-- Menu initial -->
-  <div id="menu">
-    <button id="startGameBtn">Jouer</button>
-  </div>
 
-  <!-- Conteneur du jeu, caché au départ -->
-  <div id="gameContainer" style="display:none;">
-    <canvas id="gameCanvas" width="800" height="800"></canvas>
-    <div id="resourcesDisplay"></div>
-  </div>
+  <h1>Stratégie Tour par Tour - House of the Dragon Style</h1>
+  <canvas id="gameCanvas" width="800" height="800"></canvas>
+  <div id="resourcesDisplay"></div>
+  <div id="info"></div>
 
   <script src="game.js"></script>
 </body>
 </html>
-
